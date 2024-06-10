@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Michael Conrad.
+// Copyright 2024 Michael Conrad.
 // Licensed under the Apache License, Version 2.0.
 // See LICENSE file for details.
 
@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using DnsClient.Internal;
 using DnsClient.Protocol;
 using DnsClient.Protocol.Options;
+using DnsClient.Protocol.Options.OptOptions;
 
 namespace DnsClient
 {
@@ -1563,6 +1564,10 @@ namespace DnsClient
                     serverInfo.SupportedUdpPayloadSize = optRecord.UdpSize;
 
                     audit?.AuditEdnsOpt(optRecord.UdpSize, optRecord.Version, optRecord.IsDnsSecOk, optRecord.ResponseCodeEx);
+                    foreach (var option in optRecord.Options)
+                    {
+                         audit?.AuditEdnsOption(option);
+                    }
 
                     if (_logger.IsEnabled(LogLevel.Debug))
                     {
@@ -1661,6 +1666,10 @@ namespace DnsClient
             if (record != null && record is OptRecord optRecord)
             {
                 AuditEdnsOpt(optRecord.UdpSize, optRecord.Version, optRecord.IsDnsSecOk, optRecord.ResponseCodeEx);
+                foreach (var option in optRecord.Options)
+                {
+                    AuditEdnsOption(option);
+                }
             }
 
             AuditEnd(response, response.NameServer);
@@ -1758,6 +1767,16 @@ namespace DnsClient
             }
 
             _auditWriter.AppendLine($"; EDNS: version: {version}, flags:{(doFlag ? " do" : string.Empty)}; UDP: {udpSize}; code: {responseCode}");
+        }
+
+        public void AuditEdnsOption(OptBaseOption option)
+        {
+            if (!Settings.EnableAuditTrail)
+            {
+                return;
+            }
+
+            _auditWriter.AppendLine($"; {option.RecordToString()}");
         }
 
         public void AuditEnd(IDnsQueryResponse queryResponse, NameServer nameServer)

@@ -3,12 +3,15 @@
 // See LICENSE file for details.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using DnsClient.Protocol.Options;
+using DnsClient.Protocol.Options.OptOptions;
 
 namespace DnsClient
 {
@@ -120,13 +123,32 @@ namespace DnsClient
 
             if (request.QuerySettings.UseExtendedDns)
             {
+                // structured, so we can support more in the future that are on the request, like ECS
+                List<OptBaseOption> options = new List<OptBaseOption>();
                 var opt = new OptRecord(size: request.QuerySettings.ExtendedDnsBufferSize, doFlag: request.QuerySettings.RequestDnsSecRecords);
+                if (request.QuerySettings.RequestNSID)
+                {
+                    options.Add(new NSIDOption());
+                }
 
                 writer.WriteHostName("");
                 writer.WriteUInt16NetworkOrder((ushort)opt.RecordType);
                 writer.WriteUInt16NetworkOrder((ushort)opt.RecordClass);
                 writer.WriteUInt32NetworkOrder((ushort)opt.InitialTimeToLive);
-                writer.WriteUInt16NetworkOrder(0);
+                writer.WriteUInt16NetworkOrder((ushort)(options.Count * 4 + options.Sum(option => option.Length))); // the length takes into account the size of each ones code and length (2 and 2) + the length (if any).
+
+                foreach (OptBaseOption optBaseOption in options)
+                {
+                    switch (optBaseOption.Code)
+                    {
+                        case OptOption.NSID:
+                            writer.WriteUInt16NetworkOrder((ushort)optBaseOption.Code); // code for nsid
+                            writer.WriteUInt16NetworkOrder(optBaseOption.Length); // nsid length
+                            break;
+                        default: break; // some types don't do anything on request
+                    }
+                }
+
             }
         }
 

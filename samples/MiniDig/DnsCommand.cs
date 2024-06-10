@@ -25,6 +25,8 @@ namespace DigApp
 
         public CommandOption RequestDnsSecRecordsArg { get; set; }
 
+        public CommandOption RequestNSIDArg { get; set; }
+
         public CommandOption NoRecurseArg { get; set; }
 
         public string[] OriginalArgs { get; }
@@ -102,7 +104,8 @@ namespace DigApp
                 UseTcpFallback = !GetNoTcp(),
                 MaximumCacheTimeout = GetMaximumTTL(),
                 ExtendedDnsBufferSize = GetMaximumBufferSize(),
-                RequestDnsSecRecords = GetRequestDnsSec()
+                RequestDnsSecRecords = GetRequestDnsSec(),
+                RequestNSID = GetRequestNSID(),
             };
         }
 
@@ -130,6 +133,9 @@ namespace DigApp
             => MaximumBufferSizeArg.HasValue() ? int.Parse(MaximumBufferSizeArg.Value()) : DnsQueryOptions.MaximumBufferSize;
 
         public bool GetRequestDnsSec() => RequestDnsSecRecordsArg.HasValue();
+
+        public bool GetRequestNSID() => RequestNSIDArg.HasValue();
+
 
         public int GetTimeoutValue() => ConnectTimeoutArg.HasValue() ? int.Parse(ConnectTimeoutArg.Value()) : 1000;
 
@@ -197,6 +203,10 @@ namespace DigApp
             RequestDnsSecRecordsArg = App.Option(
                 "--dnssec",
                 "Request DNS SEC records (do flag).",
+                CommandOptionType.NoValue);
+            RequestNSIDArg = App.Option(
+                "--nsid",
+                "Request NSID Opt Option.",
                 CommandOptionType.NoValue);
         }
 

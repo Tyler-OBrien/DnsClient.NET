@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Michael Conrad.
+// Copyright 2024 Michael Conrad.
 // Licensed under the Apache License, Version 2.0.
 // See LICENSE file for details.
 
@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DnsClient.Protocol;
 using DnsClient.Protocol.Options;
+using DnsClient.Protocol.Options.OptOptions;
 using Moq;
 using Xunit;
 
@@ -252,6 +253,22 @@ namespace DnsClient.Tests
 
             Assert.True(result.Additionals.OfType<OptRecord>().First().IsDnsSecOk);
         }
+
+        [Fact]
+        public void Lookup_EnabledNsid_DoFlag()
+        {
+            var dns = new LookupClient(NameServer.GooglePublicDns);
+
+            var result = dns.Query(new DnsQuestion("google.com", QueryType.A), new DnsQueryAndServerOptions()
+            {
+                RequestNSID = true
+            });
+
+            Assert.NotNull(result.Additionals.OfType<OptRecord>().First().Options.First(option => option.Code == OptOption.NSID));
+            Assert.NotEmpty(((NSIDOption)result.Additionals.OfType<OptRecord>().First().Options.First(option => option.Code == OptOption.NSID)).Data);
+            Assert.False(String.IsNullOrWhiteSpace(((NSIDOption)result.Additionals.OfType<OptRecord>().First().Options.First(option => option.Code == OptOption.NSID)).UTF8Data));
+        }
+
 
 #if ENABLE_REMOTE_DNS
 
@@ -1146,7 +1163,8 @@ namespace DnsClient.Tests
             {
                 ContinueOnDnsError = false,
                 Recursion = false,
-                RequestDnsSecRecords = true
+                RequestDnsSecRecords = true,
+                RequestNSID = true,
             });
 
             Assert.Equal(client.NameServers, settings.NameServers);
@@ -1155,6 +1173,7 @@ namespace DnsClient.Tests
             Assert.NotEqual(client.Settings.ContinueOnDnsError, settings.ContinueOnDnsError);
             Assert.NotEqual(client.Settings.Recursion, settings.Recursion);
             Assert.NotEqual(client.Settings.RequestDnsSecRecords, settings.RequestDnsSecRecords);
+            Assert.NotEqual(client.Settings.RequestNSID, settings.RequestNSID);
         }
 
         [Fact]

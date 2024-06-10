@@ -198,6 +198,7 @@ namespace DnsClient.Tests
                 new LookupClientOptions { AutoResolveNameServers = false, MinimumCacheTimeout = TimeSpan.FromSeconds(5) },
                 new LookupClientOptions { AutoResolveNameServers = false, Recursion = false },
                 new LookupClientOptions { AutoResolveNameServers = false, RequestDnsSecRecords = true },
+                new LookupClientOptions { AutoResolveNameServers = false, RequestNSID = true },
                 new LookupClientOptions { AutoResolveNameServers = false, Retries = 3 },
                 new LookupClientOptions { AutoResolveNameServers = false, ThrowDnsErrors = true },
                 new LookupClientOptions { AutoResolveNameServers = false, Timeout = TimeSpan.FromSeconds(1) },
@@ -265,6 +266,7 @@ namespace DnsClient.Tests
             Assert.True(options.UseRandomNameServer);
             Assert.Equal(DnsQueryOptions.MaximumBufferSize, options.ExtendedDnsBufferSize);
             Assert.False(options.RequestDnsSecRecords);
+            Assert.False(options.RequestNSID);
             Assert.False(options.CacheFailedResults);
             Assert.Equal(options.FailedResultsCacheDuration, TimeSpan.FromSeconds(5));
         }
@@ -318,6 +320,7 @@ namespace DnsClient.Tests
                 UseTcpOnly = !defaultOptions.UseTcpOnly,
                 ExtendedDnsBufferSize = 1234,
                 RequestDnsSecRecords = true,
+                RequestNSID = true,
                 CacheFailedResults = true,
                 FailedResultsCacheDuration = TimeSpan.FromSeconds(10)
             };
@@ -341,6 +344,7 @@ namespace DnsClient.Tests
             Assert.Equal(!defaultOptions.UseTcpOnly, client.Settings.UseTcpOnly);
             Assert.Equal(1234, client.Settings.ExtendedDnsBufferSize);
             Assert.Equal(!defaultOptions.RequestDnsSecRecords, client.Settings.RequestDnsSecRecords);
+            Assert.Equal(!defaultOptions.RequestNSID, client.Settings.RequestNSID);
             Assert.Equal(!defaultOptions.CacheFailedResults, client.Settings.CacheFailedResults);
             Assert.Equal(TimeSpan.FromSeconds(10), client.Settings.FailedResultsCacheDuration);
 
@@ -353,7 +357,8 @@ namespace DnsClient.Tests
             var options = (DnsQuerySettings)new DnsQueryOptions()
             {
                 ExtendedDnsBufferSize = DnsQueryOptions.MinimumBufferSize,
-                RequestDnsSecRecords = false
+                RequestDnsSecRecords = false,
+                RequestNSID = false,
             };
 
             Assert.False(options.UseExtendedDns);
@@ -380,7 +385,8 @@ namespace DnsClient.Tests
             {
                 // Anything more then max falls back to max.
                 ExtendedDnsBufferSize = DnsQueryOptions.MaximumBufferSize + 1,
-                RequestDnsSecRecords = false
+                RequestDnsSecRecords = false,
+                RequestNSID = false,
             };
 
             Assert.True(options.UseExtendedDns);
@@ -393,7 +399,8 @@ namespace DnsClient.Tests
             var options = (DnsQuerySettings)new DnsQueryOptions()
             {
                 ExtendedDnsBufferSize = DnsQueryOptions.MinimumBufferSize + 1,
-                RequestDnsSecRecords = false
+                RequestDnsSecRecords = false,
+                RequestNSID = true,
             };
 
             Assert.True(options.UseExtendedDns);
@@ -405,7 +412,21 @@ namespace DnsClient.Tests
             var options = (DnsQuerySettings)new DnsQueryOptions()
             {
                 ExtendedDnsBufferSize = DnsQueryOptions.MinimumBufferSize,
-                RequestDnsSecRecords = true
+                RequestDnsSecRecords = true,
+                RequestNSID = false,
+            };
+
+            Assert.True(options.UseExtendedDns);
+        }
+
+        [Fact]
+        public void QueryOptions_EdnsEnabled_ByRequestNsid()
+        {
+            var options = (DnsQuerySettings)new DnsQueryOptions()
+            {
+                ExtendedDnsBufferSize = DnsQueryOptions.MinimumBufferSize,
+                RequestDnsSecRecords = false,
+                RequestNSID = true,
             };
 
             Assert.True(options.UseExtendedDns);
@@ -772,6 +793,7 @@ namespace DnsClient.Tests
                 UseTcpFallback = !defaultOptions.UseTcpFallback,
                 UseTcpOnly = !defaultOptions.UseTcpOnly,
                 RequestDnsSecRecords = true,
+                RequestNSID = true,
                 ExtendedDnsBufferSize = 3333
             };
 

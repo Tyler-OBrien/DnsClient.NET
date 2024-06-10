@@ -11,6 +11,8 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using DnsClient.Internal;
 using DnsClient.Protocol;
+using DnsClient.Protocol.Options;
+using DnsClient.Protocol.Options.OptOptions;
 using Xunit;
 
 namespace DnsClient.Tests
@@ -730,6 +732,80 @@ H+L10KwE7wqqmkxwfib5kwgNyrlXtx0=
             _ = NSecRecord.ReadBitmap(bitmap).OrderBy(p => p).Select(p => (ResourceRecordType)p).ToArray();
 
             Assert.Equal(data, result);
+        }
+
+
+        [Fact]
+        public void DnsRecordFactory_OptRecord()
+        {
+            var writer = new DnsDatagramWriter();
+            writer.WriteUInt16NetworkOrder(3); //nsid
+            writer.WriteUInt16NetworkOrder(9); //length
+            var nsid = "gpdns-ord";
+            var getNsidBytes = Encoding.UTF8.GetBytes(nsid);
+            writer.WriteBytes(getNsidBytes, getNsidBytes.Length);
+            writer.WriteUInt16NetworkOrder(15); // edns error
+            writer.WriteUInt16NetworkOrder(11); //length
+            writer.WriteUInt16NetworkOrder(10); // code "RRSIGS missing"
+            var extraText = "For ./soa";
+            var getExtraTextbytes = Encoding.UTF8.GetBytes(extraText);
+            writer.WriteBytes(getExtraTextbytes, getExtraTextbytes.Length);
+
+            var factory = GetFactory(writer.Data.ToArray());
+            var info = new ResourceRecordInfo("", ResourceRecordType.OPT, QueryClass.IN, 0, writer.Data.Count);
+
+            var result = factory.GetRecord(info) as OptRecord;
+
+            Assert.Equal(2, result.Options.Length);
+            Assert.NotNull(((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)));
+            Assert.NotNull(((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)).Data == getNsidBytes);
+            Assert.NotNull(((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)).UTF8Data == nsid);
+
+            Assert.NotNull(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)));
+            Assert.NotNull(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).InfoCode == EDECodes.RRSIGsMissing);
+            Assert.NotNull(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).ExtraText == extraText);
+        }
+
+        [Fact]
+        public void DnsRecordFactory_OptRecord_Unknowns()
+        {
+            var writer = new DnsDatagramWriter();
+
+            /* nsid - opaque byte string, so let's send random garbage for this test  */
+            writer.WriteUInt16NetworkOrder(3); //nsid
+            var newBytes = new byte[] { 1, 2, 3, 9, 8, 255, 11, 12, 9, 8, 7, 9, 8 };
+
+            writer.WriteUInt16NetworkOrder((ushort)newBytes.Length); //length
+
+
+            writer.WriteBytes(newBytes, newBytes.Length);
+
+
+            /* edns */
+            writer.WriteUInt16NetworkOrder(15); // edns error
+            writer.WriteUInt16NetworkOrder(2); //length
+            writer.WriteUInt16NetworkOrder(65535); // private use, for test
+     
+
+            /* something unknown */
+            writer.WriteUInt16NetworkOrder(65001); // experimental/local use, should be ignored
+            writer.WriteUInt16NetworkOrder(11); //length
+            writer.WriteBytes(new byte[11], 11);
+
+            var factory = GetFactory(writer.Data.ToArray());
+            var info = new ResourceRecordInfo("", ResourceRecordType.OPT, QueryClass.IN, 0, writer.Data.Count);
+
+            var result = factory.GetRecord(info) as OptRecord;
+
+            Assert.Equal(2, result.Options.Length);
+            Assert.NotNull(((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)));
+            Assert.NotNull(((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)).Data == newBytes);
+            Assert.True(String.IsNullOrWhiteSpace(((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)).UTF8Data));
+
+            Assert.NotNull(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)));
+            Assert.NotNull(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).RawInfoCode == 65535);
+            Assert.NotNull(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).InfoCode == EDECodes.Unknown);
+            Assert.True(String.IsNullOrWhiteSpace(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).ExtraText));
         }
     }
 }

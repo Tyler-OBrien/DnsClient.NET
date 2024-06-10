@@ -1,6 +1,9 @@
-﻿// Copyright 2024 Michael Conrad.
+// Copyright 2024 Michael Conrad.
 // Licensed under the Apache License, Version 2.0.
 // See LICENSE file for details.
+
+
+using DnsClient.Protocol.Options.OptOptions;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace DnsClient.Protocol.Options
@@ -124,6 +127,8 @@ namespace DnsClient.Protocol.Options
 
         public byte[] Data { get; }
 
+        public OptBaseOption[] Options { get; set; }
+
         // used to initiate
         public OptRecord(int size = 4096, int version = 0, bool doFlag = false, int length = 0, byte[] data = null)
             : base(new ResourceRecordInfo(DnsString.RootLabel, ResourceRecordType.OPT, (QueryClass)size, version, length))
@@ -133,11 +138,14 @@ namespace DnsClient.Protocol.Options
         }
 
         // returned record
-        public OptRecord(int size, int ttlFlag, int length, byte[] data)
+        public OptRecord(int size, int ttlFlag, int length, byte[] data, OptBaseOption[] options)
             : base(new ResourceRecordInfo(DnsString.RootLabel, ResourceRecordType.OPT, (QueryClass)size, ttlFlag, length))
         {
             Data = data;
+            Options = options;
         }
+
+   
 
         private protected override string RecordToString()
         {

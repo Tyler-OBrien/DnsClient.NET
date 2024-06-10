@@ -1,12 +1,19 @@
-﻿// Copyright 2024 Michael Conrad.
+// Copyright 2024 Michael Conrad.
 // Licensed under the Apache License, Version 2.0.
 // See LICENSE file for details.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Text;
 using DnsClient.Protocol;
 using DnsClient.Protocol.Options;
+using DnsClient.Protocol.Options.OptOptions;
+
+#if NET8_0_OR_GREATER
+using System.Text.Unicode;
+#endif
 
 namespace DnsClient
 {
@@ -287,8 +294,83 @@ namespace DnsClient
         private OptRecord ResolveOptRecord(ResourceRecordInfo info)
         {
             // Consume bytes in case the OPT record has any.
+            // now being kept for back-compat
             var bytes = _reader.ReadBytes(info.RawDataLength).ToArray();
-            return new OptRecord((int)info.RecordClass, ttlFlag: info.InitialTimeToLive, length: info.RawDataLength, data: bytes);
+            if (info.RawDataLength != 0) _reader.Advance(-info.RawDataLength); // this is hacky, we could maybe make a new reader just for this data..
+            
+            List<OptBaseOption> options = new List<OptBaseOption>();
+
+            int pos = _reader.Index;
+            while ((_reader.Index - pos) < info.RawDataLength)
+            {
+                ushort code = _reader.ReadUInt16NetworkOrder();
+                ushort length = _reader.ReadUInt16NetworkOrder();
+
+                if (Enum.IsDefined(typeof(OptOption), (int)code))
+                {
+                    var validOptOption = (OptOption)code;
+                    switch (validOptOption)
+                    {
+                        case OptOption.EDE:
+                            var newEde = new EDEOption();
+                            newEde.Length = length;
+                            newEde.RawInfoCode = _reader.ReadUInt16NetworkOrder();
+                            if (Enum.IsDefined(typeof(EDECodes), (int)newEde.RawInfoCode))
+                                newEde.InfoCode = (EDECodes)newEde.RawInfoCode;
+                            else
+                                newEde.InfoCode = EDECodes.Unknown;
+                            if (length - 2 > 0) // minus 2 to account for InfoCode
+                                newEde.ExtraText = _reader.ReadString(length - 2);
+                            options.Add(newEde);
+                            break;
+                        case OptOption.NSID:
+                            var newNSID = new NSIDOption();
+                            newNSID.Length = length;
+                            if (length != 0)
+                            {
+                                newNSID.Data = _reader.ReadBytes(length).ToArray();
+
+                                if (newNSID.Data.Any())
+                                {
+#if NET8_0_OR_GREATER
+                                    if (Utf8.IsValid(newNSID.Data))
+                                        newNSID.UTF8Data = Encoding.UTF8.GetString(newNSID.Data);
+#else
+                                    // wish we had an easier way of doing this without falling back to handling exceptions. It doesn't seem very many DNS Servers respond with anything but UTF8/ASCII strings though in the wild, none of the very popular resolvers at least
+                                    // Create an encoder/decoder with exception fallback
+                                    var encoding = new UTF8Encoding(false, true);
+
+                                    try
+                                    {
+                                        // Attempt to decode the byte array to a string
+                                        newNSID.UTF8Data = encoding.GetString(newNSID.Data);
+                                    }
+                                    catch (ArgumentException) // catches DecoderFallBackException too
+                                    {
+                                    }
+#endif
+                                }
+                            }
+                            else
+                            {
+                                newNSID.Data = Array.Empty<byte>();
+                            }
+
+                            options.Add(newNSID);
+                            break;
+
+                    }
+                }
+                else
+                {
+                    // not a supported option type, we need to advance past it
+                    _reader.Advance(length);
+                }
+            }
+
+
+
+            return new OptRecord((int)info.RecordClass, ttlFlag: info.InitialTimeToLive, length: info.RawDataLength, data: bytes, options.ToArray());
         }
 
         private DsRecord ResolveDsRecord(ResourceRecordInfo info)

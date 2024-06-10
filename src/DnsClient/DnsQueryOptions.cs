@@ -218,6 +218,12 @@ namespace DnsClient
         public bool RequestDnsSecRecords { get; set; } = false;
 
         /// <summary>
+        /// Gets a flag indicating whether retrieving the NSID should be enabled and sent in the OPT record
+        /// Defaults to <c>False</c>.
+        /// </summary>
+        public bool RequestNSID { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets a flag indicating whether the DNS failures are being cached. The purpose of caching 
         /// failures is to reduce repeated lookup attempts within a short space of time.
         /// Defaults to <c>False</c>.
@@ -616,9 +622,9 @@ namespace DnsClient
 
         /// <summary>
         /// Gets a flag indicating whether EDNS is enabled based on the values
-        /// of <see cref="ExtendedDnsBufferSize"/> and <see cref="RequestDnsSecRecords"/>.
+        /// of <see cref="ExtendedDnsBufferSize"/>, <see cref="RequestDnsSecRecords"/> and <see cref="RequestNSID"/>.
         /// </summary>
-        public bool UseExtendedDns => ExtendedDnsBufferSize > DnsQueryOptions.MinimumBufferSize || RequestDnsSecRecords;
+        public bool UseExtendedDns => ExtendedDnsBufferSize > DnsQueryOptions.MinimumBufferSize || RequestDnsSecRecords || RequestNSID;
 
         /// <summary>
         /// Gets the maximum buffer used for UDP requests.
@@ -634,6 +640,13 @@ namespace DnsClient
         /// Defaults to <c>False</c>.
         /// </summary>
         public bool RequestDnsSecRecords { get; }
+
+
+        /// <summary>
+        /// Gets a flag indicating whether retrieving the NSID should be enabled and sent in the OPT record
+        /// Defaults to <c>False</c>.
+        /// </summary>
+        public bool RequestNSID { get; }
 
         /// <summary>
         /// Gets a flag indicating whether the DNS failures are being cached. The purpose of caching 
@@ -673,6 +686,7 @@ namespace DnsClient
             RequestDnsSecRecords = options.RequestDnsSecRecords;
             CacheFailedResults = options.CacheFailedResults;
             FailedResultsCacheDuration = options.FailedResultsCacheDuration;
+            RequestNSID = options.RequestNSID;
         }
 
         /// <inheritdocs />
@@ -717,6 +731,7 @@ namespace DnsClient
                    UseTcpOnly == other.UseTcpOnly &&
                    ExtendedDnsBufferSize == other.ExtendedDnsBufferSize &&
                    RequestDnsSecRecords == other.RequestDnsSecRecords &&
+                   RequestNSID == other.RequestNSID &&
                    CacheFailedResults == other.CacheFailedResults &&
                    FailedResultsCacheDuration.Equals(other.FailedResultsCacheDuration);
         }

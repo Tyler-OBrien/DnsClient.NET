@@ -48,8 +48,14 @@ namespace DnsClient.Protocol.Options.OptOptions
      */
     public abstract class OptBaseOption
     {
+        /// <summary>
+        /// Option Code for this Option
+        /// </summary>
         public abstract OptOption Code { get; }
 
+        /// <summary>
+        /// Length in Bytes for this Option's Data
+        /// </summary>
         public ushort Length { get; set; }
 
         /// <inheritdoc />

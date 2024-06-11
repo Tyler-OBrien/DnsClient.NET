@@ -67,10 +67,19 @@ namespace DnsClient.Protocol.Options.OptOptions
     {
         public override OptOption Code => OptOption.EDE;
 
+        /// <summary>
+        /// Info-Code returned for the Extended DNS Error
+        /// </summary>
         public EDECodes InfoCode { get; set; }
 
+        /// <summary>
+        /// Raw Info-Code returned for the Extended DNS Error. Will be set even if the code is unknown/non-standard.
+        /// </summary>
         public ushort RawInfoCode { get; set; }
 
+        /// <summary>
+        /// Extra-Text from Extended DNS Error
+        /// </summary>
         public string ExtraText { get; set; }
 
 

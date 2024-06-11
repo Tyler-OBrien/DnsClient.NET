@@ -19,8 +19,14 @@ namespace DnsClient.Protocol.Options.OptOptions
     {
         public override OptOption Code => OptOption.NSID;
 
+        /// <summary>
+        /// Raw Data in NSID Option-Data
+        /// </summary>
         public byte[] Data { get; set; }
 
+        /// <summary>
+        /// If NSID Option-Data was a valid UTF8 String, UTF8Data will contain the parsed string. Otherwise, null.
+        /// </summary>
         public string UTF8Data { get; set; }
 
 

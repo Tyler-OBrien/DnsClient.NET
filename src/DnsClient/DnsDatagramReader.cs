@@ -150,6 +150,17 @@ namespace DnsClient
             return result;
         }
 
+        public ArraySegment<byte> ReadBytes_WithoutAdvancing(int length)
+        {
+            if (_count < Index + length)
+            {
+                throw new DnsResponseParseException("Cannot read bytes.", _data.ToArray(), Index, length);
+            }
+
+            var result = new ArraySegment<byte>(_data.Array, _data.Offset + Index, length);
+            return result;
+        }
+
         public ArraySegment<byte> ReadBytesToEnd(int startIndex, int lengthOfRawData)
         {
             var bytesRead = Index - startIndex;

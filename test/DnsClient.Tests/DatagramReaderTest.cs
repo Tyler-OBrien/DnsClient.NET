@@ -203,6 +203,21 @@ namespace DnsClient.Tests
         }
 
         [Fact]
+        public void DatagramReader_ReadBytes_WithoutAdvancing()
+        {
+            var reader = new DnsDatagramReader(new ArraySegment<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }));
+            var currentIndex = reader.Index;
+            reader.ReadUInt16();
+            reader.ReadUInt16();
+            var result = reader.ReadBytes_WithoutAdvancing(4);
+            var result2 = reader.ReadBytes_WithoutAdvancing(4);
+
+            Assert.Equal(result, new byte[] { 4, 5, 6, 7 });
+            Assert.Equal(result, result2);
+            Assert.Equal(currentIndex, reader.Index);
+        }
+
+        [Fact]
         public void DatagramReader_IndexBounds()
         {
             var bytes = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 };

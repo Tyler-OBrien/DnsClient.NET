@@ -295,8 +295,7 @@ namespace DnsClient
         {
             // Consume bytes in case the OPT record has any.
             // now being kept for back-compat
-            var bytes = _reader.ReadBytes(info.RawDataLength).ToArray();
-            if (info.RawDataLength != 0) _reader.Advance(-info.RawDataLength); // this is hacky, we could maybe make a new reader just for this data..
+            var bytes = _reader.ReadBytes_WithoutAdvancing(info.RawDataLength).ToArray();
             
             List<OptBaseOption> options = new List<OptBaseOption>();
 

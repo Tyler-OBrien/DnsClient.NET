@@ -758,12 +758,12 @@ H+L10KwE7wqqmkxwfib5kwgNyrlXtx0=
 
             Assert.Equal(2, result.Options.Length);
             Assert.NotNull(((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)));
-            Assert.NotNull(((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)).Data == getNsidBytes);
-            Assert.NotNull(((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)).UTF8Data == nsid);
+            Assert.Equal(getNsidBytes, ((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)).Data);
+            Assert.Equal(nsid, ((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)).UTF8Data);
 
             Assert.NotNull(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)));
-            Assert.NotNull(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).InfoCode == EDECodes.RRSIGsMissing);
-            Assert.NotNull(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).ExtraText == extraText);
+            Assert.Equal(EDECodes.RRSIGsMissing, ((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).InfoCode);
+            Assert.Equal(extraText, ((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).ExtraText);
         }
 
         [Fact]
@@ -785,7 +785,6 @@ H+L10KwE7wqqmkxwfib5kwgNyrlXtx0=
             writer.WriteUInt16NetworkOrder(15); // edns error
             writer.WriteUInt16NetworkOrder(2); //length
             writer.WriteUInt16NetworkOrder(65535); // private use, for test
-     
 
             /* something unknown */
             writer.WriteUInt16NetworkOrder(65001); // experimental/local use, should be ignored
@@ -799,13 +798,13 @@ H+L10KwE7wqqmkxwfib5kwgNyrlXtx0=
 
             Assert.Equal(2, result.Options.Length);
             Assert.NotNull(((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)));
-            Assert.NotNull(((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)).Data == newBytes);
-            Assert.True(String.IsNullOrWhiteSpace(((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)).UTF8Data));
+            Assert.Equal(newBytes, ((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)).Data);
+            Assert.True(string.IsNullOrWhiteSpace(((NSIDOption)result.Options.First(option => option.Code == OptOption.NSID)).UTF8Data));
 
             Assert.NotNull(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)));
-            Assert.NotNull(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).RawInfoCode == 65535);
-            Assert.NotNull(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).InfoCode == EDECodes.Unknown);
-            Assert.True(String.IsNullOrWhiteSpace(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).ExtraText));
+            Assert.Equal(65535, ((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).RawInfoCode);
+            Assert.Equal(EDECodes.Unknown, ((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).InfoCode);
+            Assert.True(string.IsNullOrWhiteSpace(((EDEOption)result.Options.First(option => option.Code == OptOption.EDE)).ExtraText));
         }
     }
 }

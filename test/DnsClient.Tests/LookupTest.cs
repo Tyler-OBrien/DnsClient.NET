@@ -255,7 +255,7 @@ namespace DnsClient.Tests
         }
 
         [Fact]
-        public void Lookup_EnabledNsid_DoFlag()
+        public void Lookup_EnabledNsid()
         {
             var dns = new LookupClient(NameServer.GooglePublicDns);
 
@@ -266,7 +266,7 @@ namespace DnsClient.Tests
 
             Assert.NotNull(result.Additionals.OfType<OptRecord>().First().Options.First(option => option.Code == OptOption.NSID));
             Assert.NotEmpty(((NSIDOption)result.Additionals.OfType<OptRecord>().First().Options.First(option => option.Code == OptOption.NSID)).Data);
-            Assert.False(String.IsNullOrWhiteSpace(((NSIDOption)result.Additionals.OfType<OptRecord>().First().Options.First(option => option.Code == OptOption.NSID)).UTF8Data));
+            Assert.False(string.IsNullOrWhiteSpace(((NSIDOption)result.Additionals.OfType<OptRecord>().First().Options.First(option => option.Code == OptOption.NSID)).UTF8Data));
         }
 
 

@@ -206,11 +206,11 @@ namespace DnsClient.Tests
         public void DatagramReader_ReadBytes_WithoutAdvancing()
         {
             var reader = new DnsDatagramReader(new ArraySegment<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }));
+            reader.ReadUInt16();
+            reader.ReadUInt16();
             var currentIndex = reader.Index;
-            reader.ReadUInt16();
-            reader.ReadUInt16();
-            var result = reader.ReadBytes_WithoutAdvancing(4);
-            var result2 = reader.ReadBytes_WithoutAdvancing(4);
+            var result = reader.ReadBytesWithoutAdvancing(4);
+            var result2 = reader.ReadBytesWithoutAdvancing(4);
 
             Assert.Equal(result, new byte[] { 4, 5, 6, 7 });
             Assert.Equal(result, result2);

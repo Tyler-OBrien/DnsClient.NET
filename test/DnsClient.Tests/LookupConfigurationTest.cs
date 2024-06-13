@@ -400,7 +400,7 @@ namespace DnsClient.Tests
             {
                 ExtendedDnsBufferSize = DnsQueryOptions.MinimumBufferSize + 1,
                 RequestDnsSecRecords = false,
-                RequestNSID = true,
+                RequestNSID = false,
             };
 
             Assert.True(options.UseExtendedDns);

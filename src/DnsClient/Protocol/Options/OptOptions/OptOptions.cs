@@ -6,6 +6,10 @@ namespace DnsClient.Protocol.Options.OptOptions
 {
     // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml
     // COOKIE and ECS (Client Subnet) would be interesting to support. Cookie would need some modifications to ignore invalid/spoofed packets, and ECS would need some modifications to work with cache.
+
+    /// <summary>
+    /// Supported Option Codes
+    /// </summary>
     public enum OptOption
     {
 

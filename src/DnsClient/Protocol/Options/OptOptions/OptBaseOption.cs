@@ -46,6 +46,9 @@ namespace DnsClient.Protocol.Options.OptOptions
        option XYZ, it MUST include option XYZ in its response.
        
      */
+    /// <summary>
+    /// This type represents an Option Code
+    /// </summary>
     public abstract class OptBaseOption
     {
         /// <summary>
@@ -56,7 +59,7 @@ namespace DnsClient.Protocol.Options.OptOptions
         /// <summary>
         /// Length in Bytes for this Option's Data
         /// </summary>
-        public ushort Length { get; set; }
+        public int Length { get; set; }
 
         /// <inheritdoc />
         public override string ToString()
@@ -64,11 +67,9 @@ namespace DnsClient.Protocol.Options.OptOptions
             return RecordToString();
         }
 
-    
 
         /// <summary>
-        /// Returns a string representation of the record's value only.
-        /// <see cref="ToString(int)"/> uses this to compose the full string value of this instance.
+        /// Returns a string representation of the record.
         /// </summary>
         /// <returns>A string representing this record.</returns>
         public abstract string RecordToString();

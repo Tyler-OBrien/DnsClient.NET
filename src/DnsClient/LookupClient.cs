@@ -1566,7 +1566,7 @@ namespace DnsClient
                     audit?.AuditEdnsOpt(optRecord.UdpSize, optRecord.Version, optRecord.IsDnsSecOk, optRecord.ResponseCodeEx);
                     foreach (var option in optRecord.Options)
                     {
-                         audit?.AuditEdnsOption(option);
+                        audit?.AuditEdnsOption(option);
                     }
 
                     if (_logger.IsEnabled(LogLevel.Debug))

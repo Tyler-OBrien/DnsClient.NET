@@ -150,7 +150,7 @@ namespace DnsClient
             return result;
         }
 
-        public ArraySegment<byte> ReadBytes_WithoutAdvancing(int length)
+        public ArraySegment<byte> ReadBytesWithoutAdvancing(int length)
         {
             if (_count < Index + length)
             {

@@ -143,7 +143,7 @@ namespace DnsClient
                     {
                         case OptOption.NSID:
                             writer.WriteUInt16NetworkOrder((ushort)optBaseOption.Code); // code for nsid
-                            writer.WriteUInt16NetworkOrder(optBaseOption.Length); // nsid length
+                            writer.WriteUInt16NetworkOrder((ushort)optBaseOption.Length); // nsid length
                             break;
                         default: break; // some types don't do anything on request
                     }

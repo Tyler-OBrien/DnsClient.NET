@@ -15,8 +15,13 @@ namespace DnsClient.Protocol.Options.OptOptions
        semantics of which are deliberately left outside the protocol.  See
        Section 3.1 for discussion.
      */
+    /// <summary>
+    /// A <see cref="OptBaseOption"/> representing the DNS Name Server Identifier  (NSID) Option
+    /// <seealso href="https://datatracker.ietf.org/doc/html/rfc5001.html">RFC 5001</seealso>
+    /// </summary>
     public class NSIDOption : OptBaseOption
     {
+        /// <inheritdoc />
         public override OptOption Code => OptOption.NSID;
 
         /// <summary>
@@ -35,10 +40,11 @@ namespace DnsClient.Protocol.Options.OptOptions
         {
             return RecordToString();
         }
+        /// <inheritdoc />
         public override string RecordToString()
         {
             return
-                $"{this.Code.ToString()}: {BitConverter.ToString(Data).Replace("-", " ")} {(String.IsNullOrWhiteSpace(UTF8Data) == false ? $"(\"{UTF8Data}\")" : string.Empty)}";
+                $"{Code}: {BitConverter.ToString(Data).Replace("-", " ")} {(string.IsNullOrWhiteSpace(UTF8Data) == false ? $"(\"{UTF8Data}\")" : string.Empty)}";
         }
     }
 }

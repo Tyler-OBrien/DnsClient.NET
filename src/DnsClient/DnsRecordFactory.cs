@@ -295,8 +295,7 @@ namespace DnsClient
         {
             // Consume bytes in case the OPT record has any.
             // now being kept for back-compat
-            var bytes = _reader.ReadBytes_WithoutAdvancing(info.RawDataLength).ToArray();
-            
+            var bytes = _reader.ReadBytesWithoutAdvancing(info.RawDataLength).ToArray();
             List<OptBaseOption> options = new List<OptBaseOption>();
 
             int pos = _reader.Index;
@@ -315,11 +314,19 @@ namespace DnsClient
                             newEde.Length = length;
                             newEde.RawInfoCode = _reader.ReadUInt16NetworkOrder();
                             if (Enum.IsDefined(typeof(EDECodes), (int)newEde.RawInfoCode))
+                            {
                                 newEde.InfoCode = (EDECodes)newEde.RawInfoCode;
+                            }
                             else
+                            {
                                 newEde.InfoCode = EDECodes.Unknown;
+                            }
+
                             if (length - 2 > 0) // minus 2 to account for InfoCode
+                            {
                                 newEde.ExtraText = _reader.ReadString(length - 2);
+                            }
+
                             options.Add(newEde);
                             break;
                         case OptOption.NSID:
@@ -329,11 +336,13 @@ namespace DnsClient
                             {
                                 newNSID.Data = _reader.ReadBytes(length).ToArray();
 
-                                if (newNSID.Data.Any())
+                                if (newNSID.Data.Length > 0)
                                 {
 #if NET8_0_OR_GREATER
                                     if (Utf8.IsValid(newNSID.Data))
+                                    {
                                         newNSID.UTF8Data = Encoding.UTF8.GetString(newNSID.Data);
+                                    }
 #else
                                     // wish we had an easier way of doing this without falling back to handling exceptions. It doesn't seem very many DNS Servers respond with anything but UTF8/ASCII strings though in the wild, none of the very popular resolvers at least
                                     // Create an encoder/decoder with exception fallback
